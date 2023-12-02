@@ -1,7 +1,7 @@
 
-import strutils, times
+import strutils, std/monotimes, times
 const input: seq[string] = slurp("input.txt").rsplit('\n')
-let t1 = cpuTime()
+let t1 = getMonoTime()
 
 type Game = object
   id: int
@@ -44,11 +44,11 @@ for i in 0..games.len-1:
       if games[i].blue <= 14:
         sum = sum + games[i].id
 
-let t2 = cpuTime()
+let t2 = getMonoTime()
 
 echo sum
 echo sum2
-echo "This took " & $(t2-t1) & " seconds"
+echo "This took " & $(((t2-t1).inNanoseconds.float)*1e-9) & " seconds"
 
 
         
