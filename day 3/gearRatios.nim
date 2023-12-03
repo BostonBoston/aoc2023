@@ -40,7 +40,7 @@ var partNumbers: seq[int]
 var sumOfGearRatios, sumOfPartNumbers: int 
 for y, line in input:
   for x, c in line:
-    if not c.isDigit and c != '.' and c.byte != 0xd:
+    if not c.isDigit and c != '.':
       let result = findAdjacents(input, x, y, c == '*')
       partNumbers.add(result[0])
       sumOfGearRatios = sumOfGearRatios + result[1]
