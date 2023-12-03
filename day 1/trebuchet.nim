@@ -29,34 +29,18 @@ block part2:
   var sum: int
 
   for entry in input:
-    var first, last: string = "a"
-    var dist: int = 0
+    var first, last: int = -1
     block outer:
       for i in 0..entry.len-1:
         let span = entry[0..i]
+        let revspan = entry[entry.len-1-i..entry.len-1]
         for x, num in digits:
-          if span.contains(num):
-            first = $x
-            dist = i
-            break outer
-          if span.contains($x):
-            first = $x
-            dist = i
-            break outer
-    block outer:     
-      for i in countdown(entry.len-1, dist):
-        let span = entry[i..entry.len-1]
-        for x, num in digits:
-          if span.contains(num):
-            last = $x
-            break outer
-          if span.contains($x):
-            last = $x
-            break outer
-    try:
-      let num = parseInt(first & last)
-      sum = sum + num 
-    except: discard
+          if first != -1 and last != -1: break outer
+          if span.contains(num) or span.contains($x):
+            if first == -1: first = x*10
+          if revspan.contains(num) or revspan.contains($x):
+            if last == -1: last = x
+    sum = sum + (first + last)
 
   echo sum
 let t2 = getMonoTime()
