@@ -1,13 +1,12 @@
-import strutils, times
-const input: string = slurp("./input.txt")
+import strutils, times, std/monotimes
+const input: seq[string] = slurp("./input.txt").rsplit('\n')
 
-const data: seq[string] = input.rsplit('\n')
 
-let t1 = cpuTime() 
+let t1 = getMonoTime()
 block part1:
   var sum: int
 
-  for entry in data:
+  for entry in input:
     var first, last: char = 'a'
     var dist: int = 0
     for i, c in entry:
@@ -19,10 +18,8 @@ block part1:
       if entry[i].isDigit:
         last = entry[i]
         break
-    try:
-      let num = parseInt(first & last)
-      sum = sum + num 
-    except: discard
+    let num: int = (((first.byte - 48)*10) + (last.byte - 48)).int
+    sum = sum + num 
 
   echo sum
 
@@ -31,7 +28,7 @@ const digits = ["zero", "one", "two", "three", "four", "five", "six", "seven", "
 block part2:
   var sum: int
 
-  for entry in data:
+  for entry in input:
     var first, last: string = "a"
     var dist: int = 0
     block outer:
@@ -62,8 +59,8 @@ block part2:
     except: discard
 
   echo sum
-let t2 = cpuTime()
+let t2 = getMonoTime()
 
-echo "This took " & $(t2-t1) & " seconds"
+echo "This took " & $(((t2-t1).inNanoseconds.float)*1e-9) & " seconds"
 
     
