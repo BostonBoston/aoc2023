@@ -1,36 +1,33 @@
-import strutils, times, std/monotimes
+import parseutils, times, std/monotimes
+import strutils as su
 
 const input: seq[string] = slurp("input.txt").rsplit('\n')
-const linelen = input[0].len
+const locs = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
 
 let t1 = getMonoTime()
+
+
+template checkLoc(dataSet: seq[string], origin, loc: tuple[x: int, y: int]) =
+  mixin hits
+  if dataSet[(origin[1] + loc[1])][origin[0]+loc[0]].isDigit: hits.add (origin[0]+loc[0], origin[1] + loc[1])
+
 
 proc findAdjacents(input: seq[string], x, y: int, isGear: bool): (seq[int], int) =
   var 
     hits: seq[tuple[x: int, y: int]] = newSeqOfCap[tuple[x: int, y: int]](8)
 
-  if input[y-1][x-1].isDigit: hits.add (x-1, y-1)
-  if input[y-1][x].isDigit: hits.add (x, y-1)
-  if input[y-1][x+1].isDigit: hits.add (x+1, y-1)
-  if input[y][x-1].isDigit: hits.add (x-1, y)
-  if input[y][x+1].isDigit: hits.add (x+1, y)
-  if input[y+1][x-1].isDigit: hits.add (x-1, y+1)
-  if input[y+1][x].isDigit: hits.add (x, y+1)
-  if input[y+1][x+1].isDigit: hits.add (x+1, y+1)
+  for loc in locs: checkLoc(input, (x, y), loc)
 
   for hit in hits:
-    var first, last: int = 0
+    var first: int = 0
     var i = hit.x
     while input[hit.y][i].isDigit:
       dec i
       if i < 0: break
     first = i+1
-    i = hit.x
-    while input[hit.y][i].isDigit:
-      inc i
-      if i >= linelen: break
-    last = i-1
-    let potential = input[hit.y][first..last].parseInt
+
+    var potential: int
+    discard parseInt(input[hit.y], potential, first)
     if not result[0].contains(potential): result[0].add(potential) 
     if result[0].len == 2: result[1] = result[0][0] * result[0][1]
     # this works on the assumption that hits could contain multiple instances of the same part number 
@@ -53,4 +50,4 @@ let t2 = getMonoTime()
 
 echo sumOfPartNumbers
 echo sumOfGearRatios
-echo "This took " & $(((t2-t1).inNanoseconds.float)*1e-9) & " seconds"
+echo "This took " & $(((t2-t1).inNanoseconds.float)*1e-9) & " seconds" 
