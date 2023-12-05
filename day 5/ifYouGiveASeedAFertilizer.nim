@@ -1,16 +1,17 @@
-import std/[strutils, tables, strscans, sequtils]
-const input = slurp("input.txt").rsplit("\n\n")
+import std/[strutils, tables, strscans, sequtils, sugar]
+const input = slurp("input.txt").split("\n\n")
+#const input = slurp("sample.txt").split("\r\n\r\n")
 
 
 
-### BEWARE
-## This doesnt exactly work because of A: splitting the ranges doesnt seem to work
-## additionally if it did work it would take a month to run.
+
+type
+  Map = tuple[source, dest, length: int]
+  Seed = tuple[start, length: int]
 
 var
-  seeds, locations: seq[int]
-  seedsToSoil, soilToFertilizer, fertilizerToWater, waterToLight: Table[int, int]
-  lightToTempurature, tempuratureToHumidity, humidityToLocation: Table[int, int]
+  seedsToSoil, soilToFertilizer, fertilizerToWater, waterToLight: seq[Map]
+  lightToTempurature, tempuratureToHumidity, humidityToLocation: seq[Map]
 
 
 proc rangesToTable(table: var Table[int, int], source, dest, length: int) =
@@ -18,19 +19,21 @@ proc rangesToTable(table: var Table[int, int], source, dest, length: int) =
     table[source+i] = dest+i
 
 
-seeds = input[0].split(": ")[1].splitWhitespace.map(parseInt)
-echo seeds
-echo input[1]
+let seeds = input[0].split(": ")[1].splitWhitespace.map(parseInt)
+let actualSeeds: seq[Seed] = collect:
+  var i: int = -2
+  while i < seeds.len-2:
+    i += 2
+    (start: seeds[i], length: seeds[i+1])
+    
+echo actualSeeds
 
-proc mapTable(table: var Table[int, int], mapn: int) =
+
+proc mapTable(table: var seq[Map], mapn: int) =
   for map in input[mapn].split(":")[1].split(0x0A.char):
     var source, dest, length: int
-    echo "before scanf"
-    echo map
     if scanf(map, "$i $i $i", dest, source, length):
-      echo "scanf ", source, " ", dest, " ", length
-      rangesToTable(table, source, dest, length)
-    echo "after scanf"
+      table.add (source: source, dest: dest, length: length)
     
 
 mapTable(seedsToSoil, 1)
@@ -41,19 +44,36 @@ mapTable(lightToTempurature, 5)
 mapTable(tempuratureToHumidity, 6)
 mapTable(humidityToLocation, 7)
 
-proc useTable(table: Table[int, int], key: int): int =
-  try:
-    result = table[key]
-  except ValueError:
-    result = key
+proc useMap(table: seq[Map], key: int): int =
+  for map in table:
+    if (map.source..map.source+map.length-1).contains(key): 
+      return map.dest + (key - map.source)
+  return key
 
-for seed in seeds:
-    locations.add(humidityToLocation.useTable(
-                tempuratureToHumidity.useTable(
-                lightToTempurature.useTable(
-                waterToLight.useTable(
-                fertilizerToWater.useTable(
-                soilToFertilizer.useTable(
-                seedsToSoil.useTable(
-                seed))))))))
-echo locations.min # not 11451287 too low
+let locations = collect:
+  for seed in seeds:
+    humidityToLocation.useMap(
+    tempuratureToHumidity.useMap(
+    lightToTempurature.useMap(
+    waterToLight.useMap(
+    fertilizerToWater.useMap(
+    soilToFertilizer.useMap(
+    seedsToSoil.useMap(
+    seed)))))))
+
+var locations2: seq[int]
+for seed in actualSeeds:
+  for i in seed.start..<seed.start+seed.length:
+    locations2.add(humidityToLocation.useMap(
+                   tempuratureToHumidity.useMap(
+                   lightToTempurature.useMap(
+                   waterToLight.useMap(
+                   fertilizerToWater.useMap(
+                   soilToFertilizer.useMap(
+                   seedsToSoil.useMap(
+                  i))))))))
+    if locations[locations.len-1] > locations2[locations.len-2]: break
+
+
+echo locations.min 
+echo locations2.min 
