@@ -1,5 +1,5 @@
 import parseutils, times, std/monotimes
-import strutils as su
+import strutils
 
 const input: seq[string] = slurp("input.txt").rsplit('\n')
 const locs = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
